@@ -133,7 +133,23 @@ function deleteItem(id) {
 
 function setOutfitItem(catKey, itemId) {
   state.outfit = { ...state.outfit, [catKey]: itemId || undefined };
-  renderOutfitPreview();
+  renderTenueTab();
+}
+
+// Passe à l'article précédent/suivant (propre) dans une catégorie.
+// direction : 1 pour la flèche droite, -1 pour la flèche gauche.
+function cycleOutfitItem(catKey, direction) {
+  const pool = cleanItemsInCategory(catKey);
+  if (pool.length === 0) return;
+  const currentId = state.outfit[catKey];
+  let idx = pool.findIndex((it) => it.id === currentId);
+  if (idx === -1) {
+    idx = 0; // rien de sélectionné : on part du premier
+  } else {
+    idx = (idx + direction + pool.length) % pool.length;
+  }
+  state.outfit = { ...state.outfit, [catKey]: pool[idx].id };
+  renderTenueTab();
 }
 
 function pickRandomOutfit() {
@@ -228,50 +244,55 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
-/* ---- Onglet Tenue du jour ---- */
+/* ---- Onglet Tenue du jour : bobines verticales style "machine à sous" ---- */
 function renderTenueTab() {
-  const selectsHtml = CATEGORIES.map((c) => {
+  // Si une catégorie n'a encore rien de sélectionné mais a des vêtements
+  // propres disponibles, on démarre sur le premier automatiquement.
+  CATEGORIES.forEach((c) => {
+    if (!state.outfit[c.key]) {
+      const pool = cleanItemsInCategory(c.key);
+      if (pool.length > 0) state.outfit[c.key] = pool[0].id;
+    }
+  });
+
+  const rowsHtml = CATEGORIES.map((c) => {
     const pool = cleanItemsInCategory(c.key);
-    const optionsHtml = pool.map((it) => `<option value="${it.id}" ${state.outfit[c.key] === it.id ? "selected" : ""}>${escapeHtml(it.name)}</option>`).join("");
-    const emptyMsg = pool.length === 0 ? `<span class="outfit-select-empty">Rien de propre ici</span>` : "";
+
+    if (pool.length === 0) {
+      return `
+        <div class="reel-row">
+          <div class="reel-card">
+            <div class="reel-label">${c.emoji} ${c.label}</div>
+            <div class="reel-empty">Rien de propre ici</div>
+          </div>
+        </div>
+      `;
+    }
+
+    const it = itemById(state.outfit[c.key]) || pool[0];
+    const idx = pool.findIndex((p) => p.id === it.id);
+    const photo = it.image ? `<img src="${it.image}" alt="${escapeHtml(it.name)}" />` : c.emoji;
+    const singleItem = pool.length <= 1;
+
     return `
-      <div class="outfit-select-block">
-        <label class="field-label">${c.emoji} ${c.label}</label>
-        <select class="input" data-action="set-outfit" data-cat="${c.key}">
-          <option value="">— aucun —</option>
-          ${optionsHtml}
-        </select>
-        ${emptyMsg}
+      <div class="reel-row">
+        <button class="reel-arrow" data-action="cycle-outfit" data-cat="${c.key}" data-dir="-1" ${singleItem ? "disabled" : ""} aria-label="${c.label} précédent">‹</button>
+        <div class="reel-card">
+          <div class="reel-label">${c.emoji} ${c.label}</div>
+          <div class="reel-photo">${photo}</div>
+          <div class="reel-name">${escapeHtml(it.name)}</div>
+          <div class="reel-count">${idx + 1} / ${pool.length}</div>
+        </div>
+        <button class="reel-arrow" data-action="cycle-outfit" data-cat="${c.key}" data-dir="1" ${singleItem ? "disabled" : ""} aria-label="${c.label} suivant">›</button>
       </div>
     `;
   }).join("");
-  document.getElementById("outfit-selects").innerHTML = selectsHtml;
+
+  document.getElementById("outfit-reels").innerHTML = rowsHtml;
 
   document.getElementById("assign-days").innerHTML = DAYS.map(
     (d) => `<button class="chip" data-action="assign-day" data-day="${d}">${d}</button>`
   ).join("");
-
-  renderOutfitPreview();
-}
-
-function renderOutfitPreview() {
-  const html = CATEGORIES.map((c) => {
-    const it = itemById(state.outfit[c.key]);
-    const photo = it && it.image ? `<img src="${it.image}" alt="${escapeHtml(it.name)}" />` : c.emoji;
-    return `
-      <div class="outfit-preview-item">
-        <div class="outfit-preview-photo">${photo}</div>
-        <div class="outfit-preview-name">${it ? escapeHtml(it.name) : "—"}</div>
-      </div>
-    `;
-  }).join("");
-  document.getElementById("outfit-preview").innerHTML = html;
-
-  // Remet aussi à jour les <select> (au cas où l'outfit a changé via "aléatoire")
-  document.querySelectorAll('[data-action="set-outfit"]').forEach((select) => {
-    const cat = select.dataset.cat;
-    select.value = state.outfit[cat] || "";
-  });
 }
 
 /* ---- Onglet Semaine ---- */
@@ -421,17 +442,17 @@ function setupEventListeners() {
     if (action === "assign-day") {
       assignOutfitToDay(el.dataset.day);
     }
+    if (action === "cycle-outfit") {
+      cycleOutfitItem(el.dataset.cat, parseInt(el.dataset.dir, 10));
+    }
   });
 
-  // --- Changements délégués (menus déroulants) ---
+  // --- Changements délégués (menus déroulants restants : planning de semaine) ---
   document.body.addEventListener("change", (e) => {
     const el = e.target.closest("[data-action]");
     if (!el) return;
     const action = el.dataset.action;
 
-    if (action === "set-outfit") {
-      setOutfitItem(el.dataset.cat, el.value);
-    }
     if (action === "set-day-item") {
       setDayItem(el.dataset.day, el.dataset.cat, el.value);
     }

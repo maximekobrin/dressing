@@ -2,7 +2,7 @@
    VARIABLES — change les couleurs ici, tout le reste suit
    ========================================================== */
 :root {
-  --bg: #e8c9dc;      /* fond général */
+  --bg: #EDE9DF;      /* fond général */
   --ink: #2A2723;     /* texte principal */
   --paper: #F7F4EC;   /* fond des cartes / champs */
   --rose: #B9707B;    /* accent (chip active) */
@@ -325,39 +325,95 @@ select.input {
    ========================================================== */
 .tenue-actions { display: flex; gap: 10px; margin-bottom: 22px; flex-wrap: wrap; }
 
-.outfit-selects {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 16px;
-  margin-bottom: 26px;
-}
-
-.outfit-select-block { display: grid; gap: 6px; }
-.outfit-select-empty { font-size: 11px; opacity: 0.45; }
-
-.outfit-preview {
+/* --- Bobines verticales (style "machine à sous"), une par catégorie,
+       empilées haut → bas → chaussures → accessoires, centrées sur la page --- */
+.reel-stack {
   display: flex;
-  gap: 14px;
-  flex-wrap: wrap;
-  margin-bottom: 20px;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  max-width: 340px;
+  margin: 0 auto 30px;
 }
 
-.outfit-preview-item { width: 120px; text-align: center; }
-.outfit-preview-photo {
-  width: 120px;
-  height: 120px;
-  border-radius: 10px;
-  background: var(--paper);
-  border: 1px solid var(--line);
-  overflow: hidden;
+.reel-row {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 26px;
-  opacity: 0.6;
+  gap: 12px;
+  width: 100%;
 }
-.outfit-preview-photo img { width: 100%; height: 100%; object-fit: cover; }
-.outfit-preview-name { font-size: 11px; margin-top: 6px; opacity: 0.7; }
+
+.reel-arrow {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.reel-arrow:disabled { opacity: 0.3; cursor: not-allowed; }
+.reel-arrow:not(:disabled):hover { border-color: var(--rose); color: var(--rose); }
+
+.reel-card {
+  flex: 1 1 auto;
+  max-width: 220px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(42,39,35,0.08);
+}
+
+.reel-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.5;
+  margin-bottom: 8px;
+}
+
+.reel-photo {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #e4dfd2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 34px;
+}
+.reel-photo img { width: 100%; height: 100%; object-fit: cover; }
+
+.reel-name {
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 8px;
+  min-height: 1.2em;
+}
+
+.reel-count {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  opacity: 0.4;
+  margin-top: 2px;
+}
+
+.reel-empty {
+  font-size: 12px;
+  opacity: 0.45;
+  padding: 20px 0;
+}
 
 .assign-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .assign-label { font-size: 12px; opacity: 0.6; }
