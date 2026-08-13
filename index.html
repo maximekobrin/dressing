@@ -14,6 +14,7 @@
 <body>
 
   <div class="page">
+    <img src="backgrounds_pictures/bunnie.webp" class="side-image" alt="" />
 
     <!-- ===== En-tête : titre modifiable + compteur propre/sale ===== -->
     <header class="header">
@@ -25,6 +26,12 @@
       </div>
       <div id="counter" class="counter">0 propres · 0 sales</div>
       <p class="subtitle">Scanne un vêtement, marque-le propre ou sale, et laisse le dressing composer la tenue du jour — ou de la semaine.</p>
+
+      <div class="backup-row">
+        <button id="export-btn" class="btn ghost small">💾 Sauvegarder une copie</button>
+        <button id="import-btn" class="btn ghost small">📥 Restaurer une copie</button>
+        <input id="import-input" type="file" accept="application/json" class="hidden" />
+      </div>
     </header>
 
     <!-- ===== Onglets ===== -->

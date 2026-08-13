@@ -11,7 +11,7 @@ const CATEGORIES = [
   { key: "haut", label: "Hauts", emoji: "👕" },
   { key: "bas", label: "Bas", emoji: "👖" },
   { key: "chaussures", label: "Chaussures", emoji: "👟" },
-  { key: "accessoire", label: "Accessoires", emoji: "⌚" },
+  { key: "sacs", label: "sacs", emoji: "👜" },
   // Pour ajouter une catégorie, copie une ligne et change key/label/emoji.
   // Exemple : { key: "veste", label: "Vestes", emoji: "🧥" },
 ];
@@ -173,6 +173,62 @@ function setDayItem(day, catKey, itemId) {
     [day]: { ...(state.weeklyPlan[day] || {}), [catKey]: itemId || undefined },
   };
   saveToStorage("weekly-plan", state.weeklyPlan);
+}
+
+/* --------------------------------------------------------------------------
+   6bis) SAUVEGARDE / RESTAURATION — pour ne jamais perdre les photos
+   (ex. avant de changer de téléphone, ou si le navigateur efface ses données)
+   -------------------------------------------------------------------------- */
+function exportBackup() {
+  const payload = {
+    kind: "dressing-backup",
+    exportedAt: new Date().toISOString(),
+    title: state.title,
+    items: state.items,
+    weeklyPlan: state.weeklyPlan,
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `dressing-sauvegarde-${new Date().toISOString().slice(0, 10)}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function importBackup(file) {
+  const reader = new FileReader();
+  reader.onerror = () => showSaveError("Ce fichier de sauvegarde n'a pas pu être lu.");
+  reader.onload = () => {
+    let data;
+    try {
+      data = JSON.parse(reader.result);
+    } catch (e) {
+      showSaveError("Ce fichier de sauvegarde n'est pas valide.");
+      return;
+    }
+    if (!data || !Array.isArray(data.items)) {
+      showSaveError("Ce fichier de sauvegarde n'est pas au bon format.");
+      return;
+    }
+    const ok = window.confirm(
+      "Restaurer cette sauvegarde va remplacer les vêtements actuellement enregistrés sur cet appareil. Continuer ?"
+    );
+    if (!ok) return;
+
+    state.items = data.items;
+    state.weeklyPlan = data.weeklyPlan || {};
+    state.title = data.title || state.title;
+    state.outfit = {};
+
+    saveToStorage("wardrobe-items", state.items);
+    saveToStorage("weekly-plan", state.weeklyPlan);
+    saveToStorage("dressing-title", state.title);
+    renderAll();
+  };
+  reader.readAsText(file);
 }
 
 /* --------------------------------------------------------------------------
@@ -365,6 +421,16 @@ function setupEventListeners() {
   editBtn.addEventListener("click", enterTitleEdit);
   saveBtn.addEventListener("click", confirmTitleEdit);
   titleInput.addEventListener("keydown", (e) => { if (e.key === "Enter") confirmTitleEdit(); });
+
+  // --- Sauvegarder / Restaurer une copie ---
+  document.getElementById("export-btn").addEventListener("click", exportBackup);
+  const importInput = document.getElementById("import-input");
+  document.getElementById("import-btn").addEventListener("click", () => importInput.click());
+  importInput.addEventListener("change", (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (file) importBackup(file);
+    importInput.value = "";
+  });
 
   // --- Onglets ---
   document.querySelectorAll(".tab").forEach((btn) => {
