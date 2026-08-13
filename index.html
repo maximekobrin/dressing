@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mon Dressing</title>
+
+<!-- Polices (optionnel : si pas d'internet, une police système de remplacement sera utilisée) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="page">
+    <img src="backgrounds_pictures/bunnie.webp" class="side-image" alt="" />
+
+    <!-- ===== En-tête : titre modifiable + compteur propre/sale ===== -->
+    <header class="header">
+      <div class="title-row">
+        <h1 id="title-display" class="title">Mon Dressing</h1>
+        <input id="title-input" class="title-input hidden" type="text" value="Mon Dressing" />
+        <button id="title-edit-btn" class="icon-btn" title="Modifier le titre">✎</button>
+        <button id="title-save-btn" class="icon-btn hidden" title="Valider">✓</button>
+      </div>
+      <div id="counter" class="counter">0 propres · 0 sales</div>
+      <p class="subtitle">Scanne un vêtement, marque-le propre ou sale, et laisse le dressing composer la tenue du jour — ou de la semaine.</p>
+
+      <div class="backup-row">
+        <button id="export-btn" class="btn ghost small">💾 Sauvegarder une copie</button>
+        <button id="import-btn" class="btn ghost small">📥 Restaurer une copie</button>
+        <input id="import-input" type="file" accept="application/json" class="hidden" />
+      </div>
+    </header>
+
+    <!-- ===== Onglets ===== -->
+    <nav class="tabs">
+      <button class="tab active" data-tab="dressing">Dressing</button>
+      <button class="tab" data-tab="tenue">Tenue du jour</button>
+      <button class="tab" data-tab="semaine">Semaine</button>
+    </nav>
+
+    <div id="save-error" class="save-error hidden"></div>
+
+    <!-- ===== Contenu de chaque onglet (rempli par app.js) ===== -->
+    <main id="tab-dressing" class="tab-panel">
+
+      <div class="dressing-toolbar">
+        <div id="category-chips" class="chips"></div>
+        <button id="toggle-form-btn" class="btn">📤 Ajouter</button>
+      </div>
+
+      <form id="add-form" class="add-form hidden">
+        <label class="field-label">Photo du vêtement</label>
+        <input id="photo-input" type="file" accept="image/*" class="input" />
+        <img id="photo-preview" class="photo-preview hidden" alt="aperçu" />
+
+        <label class="field-label">Nom</label>
+        <input id="name-input" class="input" type="text" placeholder="ex. Pull col roulé beige" />
+
+        <label class="field-label">Catégorie</label>
+        <select id="category-select" class="input"></select>
+
+        <label class="field-label">Couleur / matière (optionnel)</label>
+        <input id="color-input" class="input" type="text" placeholder="ex. beige, laine" />
+
+        <button type="submit" id="add-item-btn" class="btn" disabled>✓ Ajouter au dressing</button>
+      </form>
+
+      <div id="items-grid" class="items-grid"></div>
+    </main>
+
+    <main id="tab-tenue" class="tab-panel hidden">
+      <div class="tenue-actions">
+        <button id="random-outfit-btn" class="btn">🔀 Tenue aléatoire</button>
+        <button id="reset-outfit-btn" class="btn ghost">↺ Réinitialiser</button>
+      </div>
+      <div id="outfit-reels" class="reel-stack"></div>
+      <div class="assign-row">
+        <span class="assign-label">Ajouter cette tenue au planning :</span>
+        <div id="assign-days" class="chips"></div>
+      </div>
+    </main>
+
+    <main id="tab-semaine" class="tab-panel hidden">
+      <div id="week-grid" class="week-grid"></div>
+      <div class="hint">✦ Seuls les vêtements marqués « propre » apparaissent dans les menus.</div>
+    </main>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
